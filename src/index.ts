@@ -35,6 +35,9 @@ type DependencyItem = {
 
 const dependencies: DependencyItem[] = [];
 const SERVICE_METHOD_KEY = 'service:method';
+const SERVICE_REQUEST_PATH = 'service:request:path';
+const SERVICE_REQUEST_FIELD = 'service:request:field';
+const SERVICE_REQUEST_FIELD_MAP = 'service:request:fieldMap';
 
 export function Service(name: string) {
     return (target: Class) => {
@@ -42,10 +45,10 @@ export function Service(name: string) {
             .filter(t => t.type === SERVICE_METHOD_KEY && t.scope === target.name)
             .forEach(o => {
                 target.prototype[o.key] = (...args: any[]) => {
-                    const length = args.length;
                     const { adapter, baseUrl = '' } = target.prototype._httpAdapterOption as InstanceOptions;
-                    return adapter && adapter(`${baseUrl}${name}${o.value}`, {
-                        params: length === 0 ? undefined : length === 1 ? args[0] : args,
+                    const url = `${baseUrl}${name}${o.value}`;
+                    return adapter && adapter(resolvePath(url, o, args), {
+                        params: resolveFields(o, args),
                         method: o.options.method || RequestMethod.GET,
                     });
                 };
@@ -53,7 +56,42 @@ export function Service(name: string) {
     }
 }
 
-export function createMethodDecorator(method: RequestMethod) {
+function resolveFields(o: DependencyItem, args: any[]) {
+    let result = {} as any;
+    dependencies.filter(t =>
+        (t.type === SERVICE_REQUEST_FIELD || t.type === SERVICE_REQUEST_FIELD_MAP) &&
+        t.key === o.key &&
+        t.scope === o.scope
+    )
+        .forEach(t => {
+            const [fieldKey, index] = t.value;
+            if (t.type === SERVICE_REQUEST_FIELD) {
+                result[fieldKey] = args[index];
+            }
+            if (t.type === SERVICE_REQUEST_FIELD_MAP) {
+                const mapData = args[index];
+                Object.keys(mapData).forEach(k => {
+                    result[k] = mapData[k];
+                });
+            }
+
+        })
+    return result;
+}
+
+function resolvePath(url: string, o: DependencyItem, args: any[]) {
+    let filterUrl = url;
+    dependencies.filter(t => t.type === SERVICE_REQUEST_PATH &&
+        t.key === o.key &&
+        t.scope === o.scope
+    ).forEach(t => {
+        const [path, index] = t.value;
+        filterUrl = filterUrl.replace(new RegExp(`:${path}`, 'g'), args[index]);
+    })
+    return filterUrl;
+}
+
+function createMethodDecorator(method: RequestMethod) {
     return (path: string) => {
         return (target: any, key: string) => {
             dependencies.push({
@@ -80,3 +118,19 @@ export function getInstance<T extends Class>(cls: T, options: InstanceOptions) {
     cls.prototype._httpAdapterOption = options;
     return cls.prototype as InstanceType<T>;
 }
+
+
+function Parameter(type: string, path?: string) {
+    return (target: any, key: string, paramIndex: number) => {
+        dependencies.push({
+            scope: target.constructor.name,
+            key,
+            value: [path, paramIndex],
+            type: type,
+        });
+    };
+}
+
+export const Path = (path: string) => Parameter(SERVICE_REQUEST_PATH, path);
+export const Field = (path: string) => Parameter(SERVICE_REQUEST_FIELD, path);
+export const FieldMap = () => Parameter(SERVICE_REQUEST_FIELD_MAP);
