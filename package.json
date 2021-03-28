@@ -1,5 +1,5 @@
 {
-  "name": "easy-api",
+  "name": "easy-api-interface",
   "version": "1.0.0",
   "description": "Write api interface with decorators",
   "main": "dist/index.js",

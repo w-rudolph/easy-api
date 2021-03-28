@@ -1,9 +1,9 @@
-# easy-api
+# easy-api-interface
 
 Write api interface with decorators
 
 ```js
-import { getInstance, Service, Post, Path, FieldMap } from 'easy-api';
+import { getInstance, Service, Post, Path, FieldMap } from 'easy-api-interface';
 
 @Service('users')
 class User {
