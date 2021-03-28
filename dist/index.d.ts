@@ -21,7 +21,6 @@ declare type InstanceOptions<T = any> = {
     baseUrl?: string;
 };
 export declare function Service(name: string): (target: Class) => void;
-export declare function createMethodDecorator(method: RequestMethod): (path: string) => (target: any, key: string) => void;
 export declare const Post: (path: string) => (target: any, key: string) => void;
 export declare const Put: (path: string) => (target: any, key: string) => void;
 export declare const Get: (path: string) => (target: any, key: string) => void;
@@ -31,4 +30,7 @@ export declare const Options: (path: string) => (target: any, key: string) => vo
 export declare const Head: (path: string) => (target: any, key: string) => void;
 export declare const All: (path: string) => (target: any, key: string) => void;
 export declare function getInstance<T extends Class>(cls: T, options: InstanceOptions): InstanceType<T>;
+export declare const Path: (path: string) => (target: any, key: string, paramIndex: number) => void;
+export declare const Field: (path: string) => (target: any, key: string, paramIndex: number) => void;
+export declare const FieldMap: () => (target: any, key: string, paramIndex: number) => void;
 export {};

@@ -1,7 +1,7 @@
 {
   "name": "easy-api",
   "version": "1.0.0",
-  "description": "Write api interface with js decorators",
+  "description": "Write api interface with decorators",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc"

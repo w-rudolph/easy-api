@@ -1,6 +1,6 @@
 # easy-api
 
-Write api interface with js decorators
+Write api interface with decorators
 
 ```js
 import { getInstance, Service, Post, Path, FieldMap } from 'easy-api';
