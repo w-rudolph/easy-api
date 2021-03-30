@@ -1,5 +1,5 @@
 interface Class {
-  new (...args: any[]): void;
+  new(...args: any[]): void;
 }
 
 type AdapterOptions = {
@@ -34,6 +34,7 @@ type DependencyItem = {
 };
 
 const dependencies: DependencyItem[] = [];
+const SERVICE_CLASS_KEY = "service:class";
 const SERVICE_METHOD_KEY = "service:method";
 const SERVICE_REQUEST_PATH = "service:request:path";
 const SERVICE_REQUEST_FIELD = "service:request:field";
@@ -50,25 +51,19 @@ export function setServiceOptions(options: ServiceOptions) {
 
 export function Service(name: string, options?: ServiceOptions) {
   return (target: Class) => {
-    dependencies
-      .filter((t) => t.type === SERVICE_METHOD_KEY && t.scope === target.name)
-      .forEach((o) => {
-        target.prototype[o.key] = (...args: any[]) => {
-          const { adapter, baseUrl = "" } =
-            (target.prototype._serviceOptions as ServiceOptions) ||
-            options ||
-            defaultOptions;
-          const url = `${baseUrl}${name}${o.value}`;
-          return (
-            adapter &&
-            adapter(resolvePath(url, o, args), {
-              params: resolveFields(o, args),
-              method: o.options.method || RequestMethod.GET,
-            })
-          );
-        };
-      });
+    dependencies.push({
+      scope: target.name,
+      key: '',
+      value: name,
+      options,
+      type: SERVICE_CLASS_KEY,
+    });
   };
+}
+
+export function resolveClassDep(Cls: Class) {
+  const fd = dependencies.find(t => t.type === SERVICE_CLASS_KEY && t.scope === Cls.name);
+  return fd ? [fd.value, fd.options] : [Cls.name];
 }
 
 function resolveFields(o: DependencyItem, args: any[]) {
@@ -112,6 +107,11 @@ function resolvePath(url: string, o: DependencyItem, args: any[]) {
   return filterUrl;
 }
 
+function resolveMethods(Cls: Class) {
+  return dependencies
+    .filter((t) => t.type === SERVICE_METHOD_KEY && t.scope === Cls.name);
+}
+
 function createMethodDecorator(method: RequestMethod) {
   return (path: string) => {
     return (target: any, key: string) => {
@@ -135,10 +135,6 @@ export const Options = createMethodDecorator(RequestMethod.OPTIONS);
 export const Head = createMethodDecorator(RequestMethod.HEAD);
 export const All = createMethodDecorator(RequestMethod.ALL);
 
-export function getInstance<T extends Class>(cls: T, options?: ServiceOptions) {
-  options && (cls.prototype._serviceOptions = options);
-  return cls.prototype as InstanceType<T>;
-}
 
 function Parameter(type: string, path?: string) {
   return (target: any, key: string, paramIndex: number) => {
@@ -154,6 +150,26 @@ function Parameter(type: string, path?: string) {
 export const Path = (path: string) => Parameter(SERVICE_REQUEST_PATH, path);
 export const Field = (path: string) => Parameter(SERVICE_REQUEST_FIELD, path);
 export const FieldMap = () => Parameter(SERVICE_REQUEST_FIELD_MAP);
+
+export function getInstance<T extends Class>(Cls: T, options?: ServiceOptions) {
+  const [serviceName, serviceOptions = defaultOptions] = resolveClassDep(Cls);
+  resolveMethods(Cls)
+    .forEach((o) => {
+      Cls.prototype[o.key] = (...args: any[]) => {
+        const { adapter, baseUrl = "" } = options || serviceOptions;
+        const url = `${baseUrl}${serviceName}${o.value}`;
+        return (
+          adapter &&
+          adapter(resolvePath(url, o, args), {
+            params: resolveFields(o, args),
+            method: o.options.method || RequestMethod.GET,
+          })
+        );
+      };
+    });
+  return Cls.prototype as InstanceType<T>;
+}
+
 export function Result<T>() {
   return {} as T;
 }
