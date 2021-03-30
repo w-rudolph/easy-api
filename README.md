@@ -3,13 +3,13 @@
 Write api interface with decorators
 
 ```js
-import { getInstance, Service, Post, Path, FieldMap } from 'easy-api-interface';
+import { getInstance, Service, Post, Path, FieldMap, Result } from 'easy-api-interface';
 
 @Service('users')
 class User {
     @Post('/:id')
-    queryData(@Path('id') _userId: string, @FieldMap() _data: any): Promise<any> {
-        return {} as Promise<any>
+    queryData(@Path('id') _userId: string, @FieldMap() _data: any) {
+        return Result<Promise<any>>();
     };
 }
 const userService = getInstance(User, {
