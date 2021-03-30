@@ -12,7 +12,10 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const _1 = require(".");
+const index_1 = require("./index");
+const class_1 = require("./decorators/class");
+const method_1 = require("./decorators/method");
+const parameter_1 = require("./decorators/parameter");
 const serviceOptions = {
     baseUrl: "https://api.github.com/",
     adapter: (url, options) => {
@@ -24,19 +27,19 @@ const serviceOptions = {
 };
 let User = class User {
     queryData(_userId, _data) {
-        return _1.Result();
+        return index_1.Result();
     }
 };
 __decorate([
-    _1.Post("/:id"),
-    __param(0, _1.Path("id")), __param(1, _1.FieldMap()),
+    method_1.Post("/:id"),
+    __param(0, parameter_1.Path("id")), __param(1, parameter_1.FieldMap()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], User.prototype, "queryData", null);
 User = __decorate([
-    _1.Service("users")
+    class_1.Service("users")
 ], User);
-_1.setServiceOptions(serviceOptions);
-const userService = _1.getInstance(User);
+index_1.setServiceOptions(serviceOptions);
+const userService = index_1.getInstance(User);
 userService.queryData("w-rudolph", { t: Date.now() }).then(console.log);

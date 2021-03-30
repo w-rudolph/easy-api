@@ -1,13 +1,12 @@
 import {
   getInstance,
-  Service,
-  Post,
-  Path,
-  FieldMap,
   Result,
   setServiceOptions,
-  ServiceOptions,
-} from ".";
+} from "./index";
+import { Service } from "./decorators/class";
+import { Post } from "./decorators/method";
+import { FieldMap, Path } from "./decorators/parameter";
+import { ServiceOptions } from "./typing";
 
 const serviceOptions: ServiceOptions = {
   baseUrl: "https://api.github.com/",
