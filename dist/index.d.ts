@@ -16,11 +16,12 @@ declare enum RequestMethod {
     OPTIONS = "OPTIONS",
     ALL = "ALL"
 }
-declare type InstanceOptions<T = any> = {
-    adapter: HttpAdapter<T>;
+export declare type ServiceOptions<T = any> = {
+    adapter: HttpAdapter<T> | null;
     baseUrl?: string;
 };
-export declare function Service(name: string): (target: Class) => void;
+export declare function setServiceOptions(options: ServiceOptions): void;
+export declare function Service(name: string, options?: ServiceOptions): (target: Class) => void;
 export declare const Post: (path: string) => (target: any, key: string) => void;
 export declare const Put: (path: string) => (target: any, key: string) => void;
 export declare const Get: (path: string) => (target: any, key: string) => void;
@@ -29,8 +30,9 @@ export declare const Patch: (path: string) => (target: any, key: string) => void
 export declare const Options: (path: string) => (target: any, key: string) => void;
 export declare const Head: (path: string) => (target: any, key: string) => void;
 export declare const All: (path: string) => (target: any, key: string) => void;
-export declare function getInstance<T extends Class>(cls: T, options: InstanceOptions): InstanceType<T>;
+export declare function getInstance<T extends Class>(cls: T, options?: ServiceOptions): InstanceType<T>;
 export declare const Path: (path: string) => (target: any, key: string, paramIndex: number) => void;
 export declare const Field: (path: string) => (target: any, key: string, paramIndex: number) => void;
 export declare const FieldMap: () => (target: any, key: string, paramIndex: number) => void;
+export declare function Result<T>(): T;
 export {};

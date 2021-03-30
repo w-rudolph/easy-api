@@ -1,6 +1,6 @@
 {
   "name": "easy-api-interface",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Write api interface with decorators",
   "main": "dist/index.js",
   "scripts": {
